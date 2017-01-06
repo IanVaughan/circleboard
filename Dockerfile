@@ -1,37 +1,34 @@
+# Setup
 # docker-machine create --driver virtualbox circleboard
 # docker-machine env circleboard
 # eval "$(docker-machine env circleboard)"
 
+# Build
 # docker build --tag circleboard .
-# docker run -d --name circleboard -p 8080 --link circileboard
+# docker run -d --name circleboard -p 8080 \
+#   -v ~/config.coffee:/circleboard/config.coffee circleboard
+
+
+# Debug
+# docker run -it --rm circleboard bash
 
 FROM ubuntu
 
 # Install Node.js and other dependencies
 RUN apt-get update && \
-    apt-get -y install curl git && \
+    apt-get -y install curl git vim && \
     curl -sL https://deb.nodesource.com/setup | sudo bash - && \
-    apt-get -y install python build-essential nodejs
+    apt-get -y install build-essential nodejs
 
-# Install nodemon
-RUN npm install -g nodemon
+RUN npm install -g coffee-script
 
-# Provides cached layer for node_modules
-# ADD package.json /tmp/package.json
-# RUN cd /tmp && npm install
-# RUN mkdir -p /src && cp -a /tmp/node_modules /src/
-
-# Define working directory
-# WORKDIR /src
-# ADD . /src
-
-RUN git clone git@github.com:Ephigenia/circleboard.git
+RUN git clone https://github.com/Ephigenia/circleboard.git
 WORKDIR /circleboard
 RUN npm install
+ADD config.coffee ./
 
 # Expose port
 EXPOSE  8080
 
 # Run app using nodemon
-# CMD ["nodemon", "/src/index.js"]
 CMD ["coffee", "server.coffee"]
